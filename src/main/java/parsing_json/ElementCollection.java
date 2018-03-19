@@ -25,7 +25,8 @@ public class ElementCollection extends ArrayList<Element> {
                 match = element;
             }
         }
-        return match;    }
+        return match;
+    }
 
     public ElementCollection where(String fieldName, Object value) {
 
@@ -35,11 +36,15 @@ public class ElementCollection extends ArrayList<Element> {
 
             for (int i = 0; i < this.size(); i++) {
                 try {
-                    if (this.get(i).getClass().getDeclaredField(fieldName).equals(value)) {
+                    Field privateStringName = this.get(i).getClass().getDeclaredField(fieldName);
+                    privateStringName.setAccessible(true);
+                    Object fieldValue = privateStringName.get(this.get(i));
+
+                    if (fieldValue.equals(value)) {
                         elementsThatMatchValueOnField.add(this.get(i));
                     }
-                } catch (NoSuchFieldException nsfe) {
-                    nsfe.printStackTrace();
+                } catch (NoSuchFieldException | IllegalAccessException e) {
+                    e.printStackTrace();
                 }
             }
         }
@@ -49,9 +54,9 @@ public class ElementCollection extends ArrayList<Element> {
 
     private boolean classContainsAttribute(String fieldName) {
         Class elementClass = Element.class;
-        Field[] fieldNames = elementClass.getFields();
+        Field[] fieldNames = elementClass.getDeclaredFields();
         for (Field name : fieldNames) {
-            if (name.getName().equals(fieldName)) {
+            if (name.getName().equalsIgnoreCase(fieldName)) {
                 return true;
             }
         }
